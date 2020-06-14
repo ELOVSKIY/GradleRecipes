@@ -1,0 +1,103 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+ext {
+    def kotlin_version = '1.3.61' // def говорит что переменная локальная
+    java_version = '1.8' // глобальная ддля всего проекта
+    if (!project.hasProperty('user')) {
+        1
+        user = 'user_from_build_file'
+    }
+}
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.3"
+
+    defaultConfig {
+        applicationId "com.example.gradle"
+        minSdkVersion 16
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    flavorDimensions "attitude", "client" //нужны для разделения демо/платное/бесплатное
+//  рядом с main можно создать папки куда моещать ресурсы
+//  ресурсы перекрывают ресурсы из мейна так имее.т более высокий приоритет
+//  крч эта хуйня друг на друга накладывается и ваще пизда происходит
+    productFlavors {
+        arrogant {
+            applicationId 'com.example.gradle.arrg'
+            minSdkVersion 26
+            targetSdkVersion 26
+            versionCode 2
+            versionName "1.0.2"
+            dimension 'attitude' //хуйня чтобы помечать дименшены
+        }
+
+        friendly {
+            version 2
+            applicationId 'com.examle.gradle.frnd'
+            dimension 'attitude'
+        }
+
+        stark {
+            dimension 'client'
+        }
+
+        wayne {
+            dimension 'client'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true // удаляет неюзанные ресурсы
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled false
+            shrinkResources false // удаляет неюзанные ресурсы
+            debuggable true
+            applicationIdSuffix '.debug'
+            versionNameSuffix '-debug'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+   implementation 'androidx.appcompat:appcompat:1.1.0'
+//    implementation 'androidx.appcompat:appcompat:1.1.0@jar' портирует просто jar
+//    implementation group: 'org.jetbrains.kotlin', name: 'kotlin', version: '1.3.61', ext: 'jar', transitive: false
+    implementation('androidx.core:core-ktx:1.3.0') {
+//        exclude group 'androix' выпиливает transitive dependency
+    }
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    implementation 'com.google.code.gson:gson:2.8.6'
+}
+// > ./gradlew -Puser=user_from_pflag -Ppass=pass_from_pflag printProperties установка значений в скрипте
+task printProperties() {
+    doLast {
+        println "username=$user"
+    }
+}
+
+task printVariantNames() {
+    doLast {
+        android.applicationVariants.all { variant ->
+            println variant.name
+        }
+    }
+}
